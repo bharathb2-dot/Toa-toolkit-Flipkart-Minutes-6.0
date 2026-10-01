@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flipkart Minutes - Smart TOA Calculator Toolkit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #b01d45;
+      --primary-hover: #8e1536;
+      --secondary-color: #fef103;
+      --secondary-dark: #e5d900;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --border-color: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* LOGIN OVERLAY CSS */
+    #loginOverlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-color);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-card {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      border-top: 5px solid var(--primary-color);
+    }
+
+    .login-card h2 {
+      color: var(--primary-color);
+      margin-bottom: 8px;
+    }
+    
+    .login-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .login-card input {
+      width: 100%;
+      text-align: center;
+      font-size: 1.1rem;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    /* Navbar Header */
+    header {
+      background: var(--primary-color);
+      color: #ffffff;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header h1 span {
+      background: var(--secondary-color);
+      color: #000000;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 20px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Card Layout */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f3f4f6;
+      padding-bottom: 12px;
+    }
+
+    .card-header h2 {
+      color: var(--primary-color);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    /* Grid Layout for Filters */
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: #f9fafb;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--primary-color);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(176, 29, 69, 0.1);
+    }
+
+    /* Dynamic Inputs Container */
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      background: #f9fafb;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px dashed #d1d5db;
+      margin-bottom: 24px;
+    }
+
+    /* Auto-Populated Result Box */
+    .result-box {
+      background: var(--primary-color);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 20px rgba(176, 29, 69, 0.15);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge-sa {
+      background: var(--secondary-color);
+      color: #000000;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 6px 14px;
+      border-radius: 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .toa-value-container {
+      margin: 12px 0;
+    }
+
+    .toa-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+
+    .toa-amount {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--secondary-color);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .warning-banner {
+      background: #ef4444;
+      color: #ffffff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .breakdown-text {
+      font-size: 0.9rem;
+      opacity: 0.95;
+      margin-top: 8px;
+      line-height: 1.5;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px 16px;
+      border-radius: 8px;
+    }
+
+    .action-btn {
+      margin-top: 20px;
+      background: var(--secondary-color);
+      color: #000000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .action-btn:hover {
+      background: var(--secondary-dark);
+      transform: translateY(-1px);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Reference Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: #f9fafb;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    tr:hover {
+      background: #f3f4f6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-card">
+      <h2>Agent Verification</h2>
+      <p>Please enter your Employee ID to access the toolkit.</p>
+      <input type="text" id="agentEmpId" placeholder="Enter Employee ID" required autocomplete="off">
+      <button class="action-btn" onclick="submitLogin()">Access Toolkit</button>
+    </div>
+  </div>
+
+  <header>
+    <h1>Flipkart MINUTES <span>TOA Calculator</span></h1>
+    <div style="font-size: 0.9rem; opacity: 0.9;">Agent Assistant Workspace</div>
+  </header>
+
+  <div class="container">
+    
+    <!-- MASTER DYNAMIC CALCULATOR -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Interactive TOA Auto-Calculator</h2>
+      </div>
+
+      <!-- STEP 1 & STEP 2 FILTERS -->
+      <div class="filter-grid">
+        <div class="form-group">
+          <label for="categoryFilter">1. Select Category (1st Filter)</label>
+          <select id="categoryFilter" onchange="onCategoryChange()">
+            <option value="fruits_veg">Fruits/ Vegetable/ Eggs</option>
+            <option value="mobile_electronics">Mobile / Electronics</option>
+            <option value="freebie_missing">Freebie Missing</option>
+            <option value="one_rs_freebie">₹1 Freebie</option>
+            <option value="bogo">Buy 1 Get 1 (BOGO)</option>
+            <option value="any_other">Any Other Category</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="issueFilter">2. Select Issue (2nd Filter)</label>
+          <select id="issueFilter" onchange="onIssueChange()">
+            <!-- Options populated dynamically via JavaScript -->
+          </select>
+        </div>
+      </div>
+
+      <!-- DYNAMIC INPUT FIELDS -->
+      <div class="inputs-grid" id="dynamicInputs">
+        <!-- Fields injected based on selection -->
+      </div>
+
+      <!-- AUTO-POPULATED RESULT DISPLAY -->
+      <div class="result-box">
+        <div class="result-header">
+          <span style="font-size: 0.95rem; font-weight: 600;">Recommended Action</span>
+          <span class="badge-sa" id="saCodeBadge">Smart Assist Reason Code: Minor Damage</span>
+        </div>
+
+        <div id="warningBanner" class="warning-banner">
+          ⚠️ 70% or more spoilage reported. Do NOT pitch TOA. Approve return/replacement request.
+        </div>
+
+        <div class="toa-value-container" id="toaValueBox">
+          <div class="toa-label">Calculated TOA Amount</div>
+          <div class="toa-amount" id="toaAmountDisplay">₹0</div>
+        </div>
+
+        <div class="breakdown-text" id="breakdownText">
+          Enter Actual Selling Price (ASP) above to calculate.
+        </div>
+
+        <button class="action-btn" onclick="copyPitchScript()">
+          📋 Copy Pitch Script for Chat
+        </button>
+      </div>
+    </div>
+
+    <!-- QUICK REFERENCE MATRIX -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Quick Reference Matrix & Rules</h2>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Condition</th>
+              <th>Smart Assist Reason Code</th>
+              <th>TOA Rule / Formula</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Fruits/ Vegetable/ Eggs</strong></td>
+              <td>Partial Spoilage (Percentage-based)</td>
+              <td><code>Minor Damage</code></td>
+              <td>Customer % of Actual Selling Price (ASP) (Reject TOA if &ge;70%)</td>
+            </tr>
+            <tr>
+              <td><strong>Fruits/ Vegetable/ Eggs</strong></td>
+              <td>Partial Spoilage (Unit-based)</td>
+              <td><code>Minor Damage</code></td>
+              <td>Proportional to damage (ASP &divide; total qty &times; damaged)</td>
+            </tr>
+            <tr>
+              <td><strong>Fruits/ Vegetable/ Eggs</strong></td>
+              <td>Quantity Short (Missing Units)</td>
+              <td><code>Minor Missing</code></td>
+              <td>Proportional to shortage (ASP &divide; total qty &times; missing)</td>
+            </tr>
+            <tr>
+              <td><strong>Mobile / Electronics</strong></td>
+              <td>Accessory Missing / Damaged</td>
+              <td><code>Accessories Missing/Damaged</code></td>
+              <td>Lower of Fixed Accessory Table vs 10% of Actual Selling Price (ASP)</td>
+            </tr>
+            <tr>
+              <td><strong>Mobile / Electronics</strong></td>
+              <td>Aesthetic Damage / Scratch</td>
+              <td><code>Minor Damage</code></td>
+              <td>Flat 10% of Actual Selling Price (ASP)</td>
+            </tr>
+            <tr>
+              <td><strong>Freebie Missing</strong></td>
+              <td>Listed on Smart Assist</td>
+              <td><code>Freebie Missing</code></td>
+              <td>100% of Freebie Printed MRP</td>
+            </tr>
+            <tr>
+              <td><strong>Freebie Missing</strong></td>
+              <td>NOT Listed on Smart Assist</td>
+              <td><code>Freebie Missing</code></td>
+              <td>10% of Main Product Actual Selling Price (ASP)</td>
+            </tr>
+            <tr>
+              <td><strong>₹1 Freebie</strong></td>
+              <td>Missing or Damaged</td>
+              <td><code>Freebie Defective / Missing</code></td>
+              <td>Freebie Printed MRP capped at ₹100 max</td>
+            </tr>
+            <tr>
+              <td><strong>Buy 1 Get 1 (BOGO)</strong></td>
+              <td>Quantity Short (1 delivered)</td>
+              <td><code>Minor Missing</code></td>
+              <td>Flat 50% of BOGO Combo Actual Selling Price (ASP)</td>
+            </tr>
+            <tr>
+              <td><strong>Any Other Category</strong></td>
+              <td>General Discrepancy / Minor Issue</td>
+              <td><code>Product Discrepancy</code></td>
+              <td>Flat 10% of Actual Selling Price (ASP) (Minimum ₹10)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    Flipkart Minutes - Token of Apology (TOA) Process Guide | Ground Rule: Minimum TOA is ₹10. Always calculate based on Actual Selling Price (ASP).
+  </footer>
+
+  <script>
+    // --- GLOBAL VARIABLES ---
+    let loggedInEmpId = "Unknown";
+    
+    // REPLACE THIS WITH YOUR NEW GOOGLE APPS SCRIPT URL
+    const googleAppScriptUrl = "https://script.google.com/a/macros/flipkart.com/s/AKfycbzIZ8KBM11ABNI5HtqPcdnAC_HDSSlXqK8CZ_g331JpMBVuRBgCCJyxmBKFd_S8meKB/exec"; 
+
+    // --- GOOGLE SHEETS TRACKER LOGIC ---
+    function sendTrackingData(action, category, issue, amount) {
+      if(googleAppScriptUrl === "https://script.google.com/a/macros/flipkart.com/s/AKfycbzIZ8KBM11ABNI5HtqPcdnAC_HDSSlXqK8CZ_g331JpMBVuRBgCCJyxmBKFd_S8meKB/exec") return; // Prevents errors if URL not set
+      
+      const queryParams = new URLSearchParams({
+        empId: loggedInEmpId,
+        action: action,
+        category: category,
+        issue: issue,
+        amount: amount
+      });
+
+      fetch(googleAppScriptUrl + "?" + queryParams.toString(), {
+        method: "GET",
+        mode: "no-cors"
+      }).catch(err => console.log("Tracking request sent."));
+    }
+
+    function submitLogin() {
+      const empInput = document.getElementById('agentEmpId').value.trim();
+      
+      if(empInput === "") {
+        alert("Please enter a valid Employee ID to continue.");
+        return;
+      }
+      
+      loggedInEmpId = empInput;
+      document.getElementById('loginOverlay').style.display = 'none';
+      
+      // Track the login event
+      sendTrackingData("Logged In", "-", "-", "-");
+    }
+
+    // Allow pressing "Enter" on keyboard to login
+    document.getElementById("agentEmpId").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        submitLogin();
+      }
+    });
+
+    // --- CALCULATOR DATA MATRIX & LOGIC ---
+    const categoryRules = {
+      fruits_veg: {
+        name: "Fruits/ Vegetable/ Eggs",
+        issues: [
+          {
+            id: "partial_spoilage_pct",
+            name: "Partial Spoilage (Percentage-based)",
+            saCode: "Minor Damage",
+            inputs: [
+              { id: "asp", label: "Actual Selling Price (ASP) ₹", type: "number", placeholder: "e.g. 120" },
+              { id: "spoilage_pct", label: "Customer Reported Spoilage %", type: "number", placeholder: "e.g. 50" }
+            ],
+            calc: (data) => {
+              if (!data.asp) return { isEmpty: true, text: "Please enter the Actual Selling Price (ASP)." };
+              const asp = parseFloat(data.asp) || 0;
+              const pct = parseFloat(data.spoilage_pct) || 0;
+              if (pct >= 70) {
+                return { isReject: true, amount: 0, text: `Spoilage reported: ${pct}%. Exceeds 70% limit. Pitch Return/Replacement instead.` };
+              }
+              let raw = (asp * pct) / 100;
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `${pct}% of Actual Selling Price (ASP) (₹${asp}) = ₹${raw.toFixed(2)}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          },
+          {
+            id: "partial_spoilage_unit",
+            name: "Partial Spoilage (Unit-based)",
+            saCode: "Minor Damage",
+            inputs: [
+              { id: "asp", label: "Actual Selling Price (ASP) of Total Order ₹", type: "number", placeholder: "e.g. 150" },
+              { id: "total_qty", label: "Total Ordered Quantity", type: "number", placeholder: "e.g. 30" },
+              { id: "damaged_qty", label: "Damaged Quantity", type: "number", placeholder: "e.g. 5" }
+            ],
+            calc: (data) => {
+              if (!data.asp) return { isEmpty: true, text: "Please enter the Actual Selling Price (ASP)." };
+              const asp = parseFloat(data.asp) || 0;
+              const totalQty = parseFloat(data.total_qty) || 1;
+              const damagedQty = parseFloat(data.damaged_qty) || 0;
+              const pctDamaged = (damagedQty / totalQty) * 100;
+              if (pctDamaged >= 70) {
+                return { isReject: true, amount: 0, text: `${damagedQty} of ${totalQty} units damaged (${pctDamaged.toFixed(0)}%). Exceeds 70% threshold. Pitch Return instead.` };
+              }
+              let unitPrice = asp / totalQty;
+              let raw = unitPrice * damagedQty;
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `Unit Price = Actual Selling Price (ASP) ₹${asp} ÷ ${totalQty} = ₹${unitPrice.toFixed(2)}. Damaged ${damagedQty} unit(s) = ₹${raw.toFixed(2)}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          },
+          {
+            id: "qty_short",
+            name: "Quantity Short (Missing Units)",
+            saCode: "Minor Missing",
+            inputs: [
+              { id: "asp", label: "Actual Selling Price (ASP) of Total Order ₹", type: "number", placeholder: "e.g. 40" },
+              { id: "total_qty", label: "Total Ordered Quantity", type: "number", placeholder: "e.g. 4" },
+              { id: "missing_qty", label: "Missing Quantity", type: "number", placeholder: "e.g. 1" }
+            ],
+            calc: (data) => {
+              if (!data.asp) return { isEmpty: true, text: "Please enter the Actual Selling Price (ASP)." };
+              const asp = parseFloat(data.asp) || 0;
+              const totalQty = parseFloat(data.total_qty) || 1;
+              const missingQty = parseFloat(data.missing_qty) || 0;
+              const pctMissing = (missingQty / totalQty) * 100;
+              if (pctMissing >= 70) {
+                return { isReject: true, amount: 0, text: `${missingQty} of ${totalQty} units missing (${pctMissing.toFixed(0)}%). Exceeds 70% threshold. Pitch Return instead.` };
+              }
+              let unitPrice = asp / totalQty;
+              let raw = unitPrice * missingQty;
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `Unit Price = Actual Selling Price (ASP) ₹${asp} ÷ ${totalQty} = ₹${unitPrice.toFixed(2)}. Missing ${missingQty} unit(s) = ₹${raw.toFixed(2)}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          }
+        ]
+      },
+      mobile_electronics: {
+        name: "Mobile / Electronics",
+        issues: [
+          {
+            id: "accessory_missing",
+            name: "Accessory Missing / Damaged",
+            saCode: "Accessories Missing/Damaged",
+            inputs: [
+              { id: "asp", label: "Actual Selling Price (ASP) of Main Product ₹", type: "number", placeholder: "e.g. 15000" },
+              { 
+                id: "accessory_type", 
+                label: "Select Missing / Damaged Accessory", 
+                type: "select", 
+                options: [
+                  { label: "Mobile Charger (Fixed ₹2,000)", value: 2000 },
+                  { label: "Apple Data Cable (Fixed ₹2,000)", value: 2000 },
+                  { label: "STD Data Cable (Fixed ₹1,000)", value: 1000 },
+                  { label: "Charger + Cable (Fixed ₹2,500)", value: 2500 },
+                  { label: "Back Cover / Case (Fixed ₹500)", value: 500 },
+                  { label: "Tempered Glass (Fixed ₹500)", value: 500 },
+                  { label: "SIM Ejector Tool (Fixed ₹500)", value: 500 },
+                  { label: "Other Accessory (10% of Actual Selling Price)", value: 0 }
+                ]
+              }
+            ],
+            calc: (data) => {
+              if (!data.asp) return { isEmpty: true, text: "Please enter the Actual Selling Price (ASP) of the main item." };
+              const asp = parseFloat(data.asp) || 0;
+              const fixedRate = parseFloat(data.accessory_type) || 0;
+              const tenPct = asp * 0.10;
+              let raw;
+              let note;
+              if (fixedRate > 0) {
+                raw = Math.min(fixedRate, tenPct);
+                note = `Fixed Rate (₹${fixedRate}) vs 10% of Actual Selling Price (ASP) (₹${tenPct.toFixed(2)}) → Lower value chosen`;
+              } else {
+                raw = tenPct;
+                note = `10% of Actual Selling Price (ASP) (₹${asp}) = ₹${tenPct.toFixed(2)}`;
+              }
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `${note}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          },
+          {
+            id: "aesthetic_damage",
+            name: "Aesthetic Damage / Minor Scratch",
+            saCode: "Minor Damage",
+            inputs: [
+              { id: "asp", label: "Actual Selling Price (ASP) ₹", type: "number", placeholder: "e.g. 2500" }
+            ],
+            calc: (data) => {
+              if (!data.asp) return { isEmpty: true, text: "Please enter the Actual Selling Price (ASP)." };
+              const asp = parseFloat(data.asp) || 0;
+              let raw = asp * 0.10;
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `10% of Actual Selling Price (ASP) (₹${asp}) = ₹${raw.toFixed(2)}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          }
+        ]
+      },
+      freebie_missing: {
+        name: "Freebie Missing",
+        issues: [
+          {
+            id: "freebie_listed",
+            name: "Freebie Missing (Listed on Smart Assist)",
+            saCode: "Freebie Missing",
+            inputs: [
+              { id: "freebie_mrp", label: "Freebie Printed MRP ₹", type: "number", placeholder: "e.g. 350" }
+            ],
+            calc: (data) => {
+              if (!data.freebie_mrp) return { isEmpty: true, text: "Please enter the Freebie Printed MRP." };
+              const mrp = parseFloat(data.freebie_mrp) || 0;
+              let finalAmt = Math.max(10, Math.round(mrp));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `100% of Freebie Printed MRP = ₹${mrp}${mrp < 10 && mrp > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          },
+          {
+            id: "freebie_unlisted",
+            name: "Freebie Missing (NOT Listed on Smart Assist)",
+            saCode: "Freebie Missing",
+            inputs: [
+              { id: "asp", label: "Actual Selling Price (ASP) of Main Product ₹", type: "number", placeholder: "e.g. 1800" }
+            ],
+            calc: (data) => {
+              if (!data.asp) return { isEmpty: true, text: "Please enter the Actual Selling Price (ASP) of the main product." };
+              const asp = parseFloat(data.asp) || 0;
+              let raw = asp * 0.10;
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `10% of Main Product Actual Selling Price (ASP) (₹${asp}) = ₹${raw.toFixed(2)}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          }
+        ]
+      },
+      one_rs_freebie: {
+        name: "₹1 Freebie",
+        issues: [
+          {
+            id: "one_rs_missing",
+            name: "Freebie Missing or Damaged",
+            saCode: "Freebie Defective / Missing",
+            inputs: [
+              { id: "freebie_mrp", label: "Freebie Printed MRP ₹", type: "number", placeholder: "e.g. 250" }
+            ],
+            calc: (data) => {
+              if (!data.freebie_mrp) return { isEmpty: true, text: "Please enter the Freebie Printed MRP." };
+              const mrp = parseFloat(data.freebie_mrp) || 0;
+              let raw = Math.min(mrp, 100);
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `Freebie Printed MRP (₹${mrp}) vs ₹100 Cap → Chosen ₹${raw}${mrp > 100 ? " (Capped at ₹100)" : ""}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          }
+        ]
+      },
+      bogo: {
+        name: "Buy 1 Get 1 (BOGO)",
+        issues: [
+          {
+            id: "bogo_shortage",
+            name: "Quantity Short (Only 1 Unit Delivered)",
+            saCode: "Minor Missing",
+            inputs: [
+              { id: "asp", label: "Actual Selling Price (ASP) of BOGO Combo ₹", type: "number", placeholder: "e.g. 1200" }
+            ],
+            calc: (data) => {
+              if (!data.asp) return { isEmpty: true, text: "Please enter the Actual Selling Price (ASP) of the BOGO combo." };
+              const asp = parseFloat(data.asp) || 0;
+              let raw = asp * 0.50;
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `50% of BOGO Combo Actual Selling Price (ASP) (₹${asp}) = ₹${raw.toFixed(2)}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          }
+        ]
+      },
+      any_other: {
+        name: "Any Other Category",
+        issues: [
+          {
+            id: "general_discrepancy",
+            name: "General Discrepancy / Minor Issue",
+            saCode: "Product Discrepancy",
+            inputs: [
+              { id: "asp", label: "Actual Selling Price (ASP) ₹", type: "number", placeholder: "e.g. 250" }
+            ],
+            calc: (data) => {
+              if (!data.asp) return { isEmpty: true, text: "Please enter the Actual Selling Price (ASP)." };
+              const asp = parseFloat(data.asp) || 0;
+              let raw = asp * 0.10;
+              let finalAmt = Math.max(10, Math.round(raw));
+              return {
+                isReject: false,
+                amount: finalAmt,
+                text: `10% of Actual Selling Price (ASP) (₹${asp}) = ₹${raw.toFixed(2)}${raw < 10 && raw > 0 ? " → Applied Minimum ₹10 Rule" : ""}`
+              };
+            }
+          }
+        ]
+      }
+    };
+
+    // UI CONTROLLER FUNCTIONS
+    function init() {
+      onCategoryChange();
+    }
+
+    function onCategoryChange() {
+      const catKey = document.getElementById('categoryFilter').value;
+      const category = categoryRules[catKey];
+      const issueSelect = document.getElementById('issueFilter');
+      
+      issueSelect.innerHTML = '';
+      category.issues.forEach((issue) => {
+        const opt = document.createElement('option');
+        opt.value = issue.id;
+        opt.textContent = issue.name;
+        issueSelect.appendChild(opt);
+      });
+
+      onIssueChange();
+    }
+
+    function onIssueChange() {
+      const catKey = document.getElementById('categoryFilter').value;
+      const issueId = document.getElementById('issueFilter').value;
+      const category = categoryRules[catKey];
+      const issue = category.issues.find(i => i.id === issueId) || category.issues[0];
+
+      // Update SA Reason Code Badge
+      document.getElementById('saCodeBadge').textContent = `Smart Assist Reason Code: ${issue.saCode}`;
+
+      // Build Inputs
+      const inputsContainer = document.getElementById('dynamicInputs');
+      inputsContainer.innerHTML = '';
+
+      issue.inputs.forEach(inputDef => {
+        const div = document.createElement('div');
+        div.className = 'form-group';
+
+        const label = document.createElement('label');
+        label.textContent = inputDef.label;
+        div.appendChild(label);
+
+        if (inputDef.type === 'select') {
+          const select = document.createElement('select');
+          select.id = inputDef.id;
+          inputDef.options.forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.label;
+            select.appendChild(o);
+          });
+          select.onchange = calculateTOA;
+          div.appendChild(select);
+        } else {
+          const input = document.createElement('input');
+          input.type = inputDef.type;
+          input.id = inputDef.id;
+          input.value = '';
+          input.placeholder = inputDef.placeholder || 'Enter value';
+          input.oninput = calculateTOA;
+          div.appendChild(input);
+        }
+
+        inputsContainer.appendChild(div);
+      });
+
+      calculateTOA();
+    }
+
+    function calculateTOA() {
+      const catKey = document.getElementById('categoryFilter').value;
+      const issueId = document.getElementById('issueFilter').value;
+      const category = categoryRules[catKey];
+      const issue = category.issues.find(i => i.id === issueId) || category.issues[0];
+
+      const formData = {};
+      issue.inputs.forEach(inputDef => {
+        const el = document.getElementById(inputDef.id);
+        if (el) formData[inputDef.id] = el.value;
+      });
+
+      const res = issue.calc(formData);
+
+      const warningBanner = document.getElementById('warningBanner');
+      const toaValueBox = document.getElementById('toaValueBox');
+      const toaAmountDisplay = document.getElementById('toaAmountDisplay');
+      const breakdownText = document.getElementById('breakdownText');
+
+      if (res.isEmpty) {
+        warningBanner.style.display = 'none';
+        toaValueBox.style.display = 'block';
+        toaAmountDisplay.textContent = '₹0';
+        breakdownText.textContent = res.text;
+      } else if (res.isReject) {
+        warningBanner.style.display = 'block';
+        warningBanner.textContent = `⚠️ ${res.text}`;
+        toaValueBox.style.display = 'none';
+        breakdownText.textContent = 'TOA pitching disabled due to policy limits (&ge;70% issue).';
+      } else {
+        warningBanner.style.display = 'none';
+        toaValueBox.style.display = 'block';
+        toaAmountDisplay.textContent = `₹${res.amount}`;
+        breakdownText.textContent = res.text;
+      }
+    }
+
+    function copyPitchScript() {
+      const amtText = document.getElementById('toaAmountDisplay').textContent;
+      if (amtText === '₹0') {
+        alert('Please enter a valid Actual Selling Price (ASP) first!');
+        return;
+      }
+      
+      const script = `Since we want to set this right for you, the seller can add ${amtText} to the Gift Card section of your Flipkart account. Please let us know if you would like to go ahead.`;
+      
+      navigator.clipboard.writeText(script).then(() => {
+        alert('Pitch script copied to clipboard!\n\n"' + script + '"');
+        
+        // Track the usage event in Google Sheets
+        const catKey = document.getElementById('categoryFilter').value;
+        const issueId = document.getElementById('issueFilter').value;
+        const category = categoryRules[catKey].name;
+        const issue = categoryRules[catKey].issues.find(i => i.id === issueId).name;
+        
+        sendTrackingData("Copied Pitch", category, issue, amtText);
+      });
+    }
+
+    // Run on load
+    window.onload = init;
+  </script>
+</body>
+</html>
